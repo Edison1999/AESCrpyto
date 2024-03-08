@@ -75,9 +75,33 @@ public class AES implements AESImplementation {
         return shifted_arr;
     }
 
-    // mixColumns step for encryption
-    public static void mixColumns(byte[][] state) {
-        throw new UnsupportedOperationException("Unimplemented method 'mixColumns'");
+    // mixColumns step for encryption for mixColumns
+    public static byte[][] mixColumns(byte[][] state) {
+        byte[][] result = new byte[4][4];
+        for (int col = 0; col < state[0].length; col++) {
+            result[0][col] = (byte) (GMul((byte)0x02, state[0][col]) ^ GMul((byte)0x03,state[1][col]) ^ state[2][col] ^ state[3][col]);
+            result[1][col] = (byte) (state[0][col] ^ GMul((byte)0x02, state[1][col]) ^ GMul((byte)0x03, state[2][col]) ^ state[3][col]);
+            result[2][col] = (byte) (state[0][col] ^ state[1][col] ^ GMul((byte)0x02 ,state[2][col]) ^ GMul((byte)0x03, state[3][col]));
+            result[3][col] = (byte) (GMul((byte)0x03 ,state[0][col]) ^ state[1][col] ^ state[2][col] ^ GMul((byte)0x02 , state[3][col]));   
+        }
+        return result;
+    }
+
+    // Galois Field (256) Multiplication of two Bytes for mixColumns
+    private static byte GMul(byte a, byte b) {
+        byte p = 0;
+        for (int counter = 0; counter < 8; counter++) {
+            if ((b & 1) != 0) {
+                p ^= a;
+            }
+            boolean hi_bit_set = (a & 0x80) != 0;
+            a <<= 1;
+            if (hi_bit_set) {
+                a ^= 0x1B; /* x^8 + x^4 + x^3 + x + 1 */
+            }
+            b >>= 1;
+        }
+        return p;
     }
 
     // convert a hex string s to a byte array
@@ -170,8 +194,15 @@ public class AES implements AESImplementation {
     }
 
     // inverse mixColumns step for decryption
-    public static void invMixColumns(byte[][] state) {
-        throw new UnsupportedOperationException("Unimplemented method 'invMixColumns'");
+    public static byte[][] invMixColumns(byte[][] state) {
+        byte[][] result = new byte[4][4];
+        for (int col = 0; col < state[0].length; col++) {
+            result[0][col] = (byte) (GMul((byte)0x0e, state[0][col]) ^ GMul((byte)0x0b, state[1][col]) ^ GMul((byte)0x0d, state[2][col]) ^ GMul((byte)0x09, state[3][col]));
+            result[1][col] = (byte) (GMul((byte)0x09, state[0][col]) ^ GMul((byte)0x0e, state[1][col]) ^ GMul((byte)0x0b, state[2][col]) ^ GMul((byte)0x0d, state[3][col]));
+            result[2][col] = (byte) (GMul((byte)0x0d, state[0][col]) ^ GMul((byte)0x09, state[1][col]) ^ GMul((byte)0x0e, state[2][col]) ^ GMul((byte)0x0b, state[3][col]));
+            result[3][col] = (byte) (GMul((byte)0x0b, state[0][col]) ^ GMul((byte)0x0d, state[1][col]) ^ GMul((byte)0x09, state[2][col]) ^ GMul((byte)0x0e, state[3][col]));
+        }
+        return result;
     }
 
     public static void main(String[] args) {
