@@ -1,6 +1,8 @@
 import java.io.*;
 
 public class AES implements AESImplementation {
+
+    public static String key = "23c4c7e11ab3c79a420446c5c25d3a18";
     
     // encrypts the string s
     public static String encrypt(String s, int rounds) {
@@ -21,7 +23,13 @@ public class AES implements AESImplementation {
 
     // addRoundKey step for encryption
     public static void addRoundKey(byte[][] state) {
-        throw new UnsupportedOperationException("Unimplemented method 'addRoundKey'");
+        byte[][] keyArr = stringToByteArray(key);
+        for (int i = 0; i < state.length; i++) {
+            for (int j = 0; j < state[0].length; j++) {
+                int temp = ((int) state[i][j]) ^ ((int) keyArr[i][j]);
+                state[i][j] = (byte) temp;
+            }
+        }
     }
 
     // subBytes step for encryption
@@ -29,12 +37,22 @@ public class AES implements AESImplementation {
         byte[][] result = new byte[state.length][state[0].length];
         for (int i = 0; i < state.length; i++) {
             for (int j = 0; j < state[i].length; j++) {
-                int row = (state[i][j] & 0xF0) >> 4;
-                int col = state[i][j] & 0x0F;
-                result[i][j] = sbox0[row * 16 + col];
+                result[i][j] = getByteFromSBox(state[i][j]);
             }
         }
         return result;
+    }
+
+    // get the byte value associated wiht byte b from Forward S-box
+    public static byte getByteFromSBox(byte b) {
+        int i = Byte.toUnsignedInt(b);
+        return FORWARD_S_BOX[i];
+    }
+    
+    // get the byte value associated wiht byte b from Inverse S-box
+    public static byte getByteFromInvSBox(byte b) {
+        int i = Byte.toUnsignedInt(b);
+        return INVERSE_S_BOX[i];
     }
 
     // shiftRows step for encryption
@@ -42,21 +60,17 @@ public class AES implements AESImplementation {
         byte[][] result = new byte[state.length][state[0].length];
         result[0]=state[0];
         for (int i = 1; i < state.length; i++) {
-            result[i] =  shiftLeft(state[i], i);
+            result[i] =  shiftRight(state[i], i);
         }
         return result;
     }
 
-    private static byte[] shiftLeft(byte[] bs, int shift) {
-        byte[] shifted_arr=new byte [bs.length];
-        int left=0;
+    public static byte[] shiftRight(byte[] bs, int shift) {
+        byte[] shifted_arr = new byte[bs.length];
+        int shiftTo;
         for (int i = 0; i < bs.length; i++) {
-            if (i + shift < bs.length){
-                shifted_arr[i] = bs[i+ shift];
-            }else {
-                shifted_arr[i] = bs[left];
-                left+=1;
-            }
+            shiftTo = (i + shift) % 4;
+            shifted_arr[i] = bs[shiftTo];
         }
         return shifted_arr;
     }
@@ -68,12 +82,45 @@ public class AES implements AESImplementation {
 
     // convert a hex string s to a byte array
     public static byte[][] stringToByteArray(String s) {
-        throw new UnsupportedOperationException("Unimplemented method 'stringToByteArray'");
+        byte[][] result = new byte[4][4];
+        String temp;
+        int start;
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                start = i * 8 + j * 2;
+                temp = s.substring(start, start + 2);
+                result[i][j] = hexStringToByte(temp);
+            }
+        }
+        return result;
+    }
+
+    // convert a hex string s to a byte
+    public static byte hexStringToByte(String s) {
+        int i = Integer.parseInt(s, 16);
+        byte b = (byte) i;
+        return b;
     }
 
     // convert a byte array arr to a string
     public static String byteArrayToString(byte[][] arr) {
-        throw new UnsupportedOperationException("Unimplemented method 'byteArrayToString'");
+        String temp = "";
+        for (int i = 0; i < arr.length; i++) {
+            for (int j = 0; j < arr[0].length; j++) {
+                temp += byteToHexString(arr[i][j]);
+            }
+        }
+        return temp;
+    }
+
+    // convert a byte b to a hex string
+    public static String byteToHexString(byte b) {
+        int i = b & 0xff;
+        String s = Integer.toHexString(i);
+        if (s.length() % 2 == 1) { // if only one digit, pad with zero
+            s = "0" + s;
+        }
+        return s;
     }
 
     // decrypts the String s
@@ -83,7 +130,7 @@ public class AES implements AESImplementation {
         shiftRows(state);
         subBytes(state);
         for (int i = 0; i < rounds-1; i++) {
-            invAddRoundKey(state);
+            addRoundKey(state);
             invMixColumns(state);
             invShiftRows(state);
             invSubBytes(state);
@@ -91,19 +138,12 @@ public class AES implements AESImplementation {
         addRoundKey(state);
     }
 
-    // inverse addRoundKey step for decryption
-    public static void invAddRoundKey(byte[][] state) {
-        throw new UnsupportedOperationException("Unimplemented method 'invAddRoundKey'");
-    }
-
     // inverse subBytes step for decryption
     public static byte[][] invSubBytes(byte[][] state) {
         byte[][] result = new byte[state.length][state[0].length];
         for (int i = 0; i < state.length; i++) {
             for (int j = 0; j < state[i].length; j++) {
-                int row = (state[i][j] & 0xF0) >> 4;
-                int col = state[i][j] & 0x0F;
-                result[i][j] = sbox1[row * 16 + col];
+                result[i][j] = getByteFromInvSBox(state[i][j]);
             }
         }
         return result;
@@ -112,23 +152,19 @@ public class AES implements AESImplementation {
     // inverse shiftRows step for decryption
     public static byte[][] invShiftRows(byte[][] state) {
         byte[][] result = new byte[state.length][state[0].length];
-        result[0]=state[0];
+        result[0] = state[0];
         for (int i = 1; i < state.length; i++) {
             result[i] =  shiftRight(state[i], i);
         }
         return result;
     }
 
-    private static byte[] shiftRight(byte[] bs, int shift) {
-        byte[] shifted_arr=new byte [bs.length];
-        int right=bs.length-shift;
+    public static byte[] shiftLeft(byte[] bs, int shift) {
+        byte[] shifted_arr = new byte[bs.length];
+        int shiftTo;
         for (int i = 0; i < bs.length; i++) {
-            if (right > bs.length -1){
-                shifted_arr[i] = bs[right];
-                right+=1;
-            }else {
-                shifted_arr[i] = bs[i-shift];
-            }
+            shiftTo = (i + shift*-1 + 4) % 4;
+            shifted_arr[i] = bs[shiftTo];
         }
         return shifted_arr;
     }
@@ -138,15 +174,10 @@ public class AES implements AESImplementation {
         throw new UnsupportedOperationException("Unimplemented method 'invMixColumns'");
     }
 
-    public static int add(int i) {
-        return i+1;
-    }
-
     public static void main(String[] args) {
         String plainText = "7b2e9f8c5a6d3f10e57cb4aef906d2a4";
         String key = "9a3f7b0e5c2d8a1f4b6e0c3d2f5a8e9d";
          
-
         byte[][] arr_plainText = new byte[4][4];
         byte[][] arr_key = new byte[4][4];
     
