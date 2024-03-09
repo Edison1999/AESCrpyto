@@ -1,3 +1,4 @@
+package utilities;
 public class HexToByte {
 
     public static void hexStringToByte() {
