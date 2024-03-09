@@ -23,7 +23,7 @@ public class AESTest {
             {(byte)0xa8, (byte)0x8d, (byte)0xa2, (byte)0x34}
         };
         
-        // Testing subbytes and invSubBytes
+        // Testing subbytes
         byte[][] expected = {
             {(byte)0x23, (byte)0xc4, (byte)0xc7, (byte)0xe1},
             {(byte)0x1a, (byte)0xbe, (byte)0xc7, (byte)0x9a},
@@ -118,6 +118,52 @@ public class AESTest {
         String output = AES.byteArrayToString(input);
         assertEquals(expected, output);
     }
+
+    @Test
+    public void mixColumnsTest() {
+        byte[][] input = {
+            {(byte)0xdb, (byte)0xf2, (byte)0x01, (byte)0x2d},
+            {(byte)0x13, (byte)0x0a, (byte)0x01, (byte)0x26},
+            {(byte)0x53, (byte)0x22, (byte)0x01, (byte)0x31},
+            {(byte)0x45, (byte)0x5c, (byte)0x01, (byte)0x4c}
+        };
+        byte[][] expected = {
+            {(byte)0x8e, (byte)0x9f, (byte)0x01, (byte)0x4d},
+            {(byte)0x4d, (byte)0xdc, (byte)0x01, (byte)0x7e},
+            {(byte)0xa1, (byte)0x58, (byte)0x01, (byte)0xbd},
+            {(byte)0xbc, (byte)0x9d, (byte)0x01, (byte)0xf8}
+        };
+        byte[][] outputArr = AES.mixColumns(input);
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                System.out.println(outputArr[i][j]);
+                assertEquals(outputArr[i][j], expected[i][j]);
+            }
+        }
+    } 
+
+    @Test
+    public void invMixColumns() {
+        byte[][] input = {
+            {(byte)0x8e, (byte)0x9f, (byte)0x01, (byte)0x4d},
+            {(byte)0x4d, (byte)0xdc, (byte)0x01, (byte)0x7e},
+            {(byte)0xa1, (byte)0x58, (byte)0x01, (byte)0xbd},
+            {(byte)0xbc, (byte)0x9d, (byte)0x01, (byte)0xf8}
+        };
+        byte[][] expected = {
+            {(byte)0xdb, (byte)0xf2, (byte)0x01, (byte)0x2d},
+            {(byte)0x13, (byte)0x0a, (byte)0x01, (byte)0x26},
+            {(byte)0x53, (byte)0x22, (byte)0x01, (byte)0x31},
+            {(byte)0x45, (byte)0x5c, (byte)0x01, (byte)0x4c}
+        };
+        byte[][] outputArr = AES.invMixColumns(input);
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                System.out.println(outputArr[i][j]);
+                assertEquals(outputArr[i][j], expected[i][j]);
+            }
+        }
+    } 
 
     // @Test
     public static void main(String[] args) {
