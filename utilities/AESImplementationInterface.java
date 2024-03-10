@@ -1,5 +1,13 @@
 package utilities;
 public interface AESImplementationInterface {
+
+    // RCon (Round constants) for key expansion
+    public static final byte[] RCON = {
+        (byte)0x01, (byte)0x02, (byte)0x04, (byte)0x08, 
+        (byte)0x10, (byte)0x20, (byte)0x40, (byte)0x80, 
+        (byte)0x1B, (byte)0x36
+    };
+
     // S-box matrix used for SubBytes()
     public static final byte[] FORWARD_S_BOX = {
         (byte)0x63, (byte)0x7c, (byte)0x77, (byte)0x7b, (byte)0xf2, (byte)0x6b, (byte)0x6f, (byte)0xc5, (byte)0x30, (byte)0x01, (byte)0x67, (byte)0x2b, (byte)0xfe, (byte)0xd7, (byte)0xab, (byte)0x76,

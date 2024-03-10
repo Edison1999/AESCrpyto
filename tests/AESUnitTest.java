@@ -5,7 +5,44 @@ import utilities.AESImplementation;
 
 public class AESUnitTest {
 
-    //Test Encryption methods
+    /**
+     * Test Key Expansion methods
+     */
+    @Test
+    public void keyExpansionTest() {
+        // TODO: complete test
+    }
+
+    @Test
+    public void keyExpansionCoreTest() {
+        byte[] tempKey = {(byte)0x13, (byte)0xaa, (byte)0x54, (byte)0x87};
+        int round = 1;
+        byte[] outputTempKey = AESImplementation.keyExpansionCore(tempKey, round);
+        byte[] expected = {(byte)0xad, (byte)0x20, (byte)0x17, (byte)0x7d};
+        assertArrayEquals(expected, outputTempKey);
+    }
+
+    @Test
+    public void generateNewKeyTest() {
+        byte[][] oldKey = {
+            {(byte)0x24, (byte)0x34, (byte)0x31, (byte)0x13},
+            {(byte)0x75, (byte)0x75, (byte)0xe2, (byte)0xaa},
+            {(byte)0xa2, (byte)0x56, (byte)0x12, (byte)0x54},
+            {(byte)0xb3, (byte)0x88, (byte)0x00, (byte)0x87}
+        };
+        byte[][] expected = {
+            {(byte)0x89, (byte)0xbd, (byte)0x8c, (byte)0x9f},
+            {(byte)0x55, (byte)0x20, (byte)0xc2, (byte)0x68},
+            {(byte)0xb5, (byte)0xe3, (byte)0xf1, (byte)0xa5},
+            {(byte)0xce, (byte)0x46, (byte)0x46, (byte)0xc1}
+        };
+        byte[][] output = AESImplementation.generateNewKey(oldKey, 1);
+        assertArrayEquals(expected, output);
+    }
+
+    /**
+     * Test Encryption methods
+     */
     @Test
     public void subBytesTest() {
         byte[][] input = {
@@ -20,14 +57,9 @@ public class AESUnitTest {
             {(byte)0x1a, (byte)0xbe, (byte)0xc7, (byte)0x9a},
             {(byte)0x42, (byte)0x04, (byte)0x46, (byte)0xc5},
             {(byte)0xc2, (byte)0x5d, (byte)0x3a, (byte)0x18}
-        };
-
+        };     
         byte[][] output = AESImplementation.subBytes(input);
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                assertEquals(expected[i][j], output[i][j]);
-            }
-        }
+        assertArrayEquals(expected, output);
     }
 
     @Test
@@ -47,11 +79,7 @@ public class AESUnitTest {
         };
 
         byte[][] output = AESImplementation.shiftRows(input);
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                assertEquals(expected[i][j], output[i][j]);
-            }
-        }
+        assertArrayEquals(expected, output);
     }
 
     @Test
@@ -71,47 +99,25 @@ public class AESUnitTest {
         };
 
         byte[][] outputArr = AESImplementation.mixColumns(input);
-
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                System.out.println(outputArr[i][j]);
-                assertEquals(outputArr[i][j], expected[i][j]);
-            }
-        }
+        assertArrayEquals(expected, outputArr);
     } 
 
-    // NEED TO FIX THIS TEST
-    // @Test
-    // public void addRoundKeyTest() {
-    //     byte[][] input = {
-    //         {(byte)0xdb, (byte)0xf2, (byte)0x01, (byte)0x2d},
-    //         {(byte)0x13, (byte)0x0a, (byte)0x01, (byte)0x26},
-    //         {(byte)0x53, (byte)0x22, (byte)0x01, (byte)0x31},
-    //         {(byte)0x45, (byte)0x5c, (byte)0x01, (byte)0x4c}
-    //     };
+    @Test
+    public void addRoundKeyTest() {
+        String inputStr = "0dfcb6ccd6adf66a866dec755f77e001";
+        String keyStr = "efe98857bf89a365ab9dd37dc58db928";
+        byte[][] inputArr = AESImplementation.stringToByteArray(inputStr);
+        byte[][] keyArr = AESImplementation.stringToByteArray(keyStr);
+        String expectedStr = "e2153e9b6924550f2df03f089afa5929";
+        byte[][] expectedArr = AESImplementation.stringToByteArray(expectedStr);
+        // compute result array from addRoundKey method
+        byte[][] outputArr = AESImplementation.addRoundKey(inputArr, keyArr);
+        assertArrayEquals(expectedArr, outputArr);
+    } 
 
-    //     byte[][] key = {
-    //         {(byte)0x8e, (byte)0x9f, (byte)0x01, (byte)0x4d},
-    //         {(byte)0x4d, (byte)0xdc, (byte)0x01, (byte)0x7e},
-    //         {(byte)0xa1, (byte)0x58, (byte)0x01, (byte)0xbd},
-    //         {(byte)0xbc, (byte)0x9d, (byte)0x01, (byte)0xf8}
-    //     };
-    //     \\NEED TO COME BACK HERE AND FIX
-    //     byte[][] expected = {
-    //         ????????????????????????????
-    //     };
-
-    //     byte[][] outputArr = AESImplementation.addRoundKey(input, key);
-
-    //     for (int i = 0; i < 4; i++) {
-    //         for (int j = 0; j < 4; j++) {
-    //             System.out.println(outputArr[i][j]);
-    //             assertEquals(outputArr[i][j], expected[i][j]);
-    //         }
-    //     }
-    // } 
-
-    //Test Decryption methods
+    /**
+     * Test Decryption methods
+     */
     @Test
     public void InvSubBytesTest() {
         byte[][] input = {
@@ -129,12 +135,7 @@ public class AESUnitTest {
         };
 
         byte[][] output = AESImplementation.invSubBytes(input);
-
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                assertEquals(expected[i][j], output[i][j]);
-            }
-        }
+        assertArrayEquals(expected, output);
     }
 
     @Test
@@ -154,11 +155,7 @@ public class AESUnitTest {
         };
 
         byte[][] output = AESImplementation.invShiftRows(input);
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                assertEquals(expected[i][j], output[i][j]);
-            }
-        }
+        assertArrayEquals(expected, output);
     }
 
     @Test
@@ -178,16 +175,12 @@ public class AESUnitTest {
         };
 
         byte[][] outputArr = AESImplementation.invMixColumns(input);
-
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                System.out.println(outputArr[i][j]);
-                assertEquals(outputArr[i][j], expected[i][j]);
-            }
-        }
+        assertArrayEquals(expected, outputArr);
     } 
 
-    // Test Helper methods
+    /**
+     * Test Helper methods
+     */
     @Test
     public void getByteFromSBoxTest() {
         byte input = (byte) 1;
@@ -204,54 +197,42 @@ public class AESUnitTest {
         byte[] output_right = AESImplementation.shift(output_left, 2, false);
 
         //Test shift left
-        for (int i = 0; i < output_left.length; i++) {
-            assertEquals(expected[i], output_left[i]);
-        }
+        assertArrayEquals(expected, output_left);
 
         //Test shift right
-
-        for (int i = 0; i < output_right.length; i++) {
-            assertEquals(input[i], output_right[i]);
-        }
+        assertArrayEquals(input, output_right);
     }
 
-    //NEED TO COMPLETE THIS TEST
-
-    // @Test
-    // public void GMulTest(){
-    //     byte input_1 = ;
-    //     byte input_2 = ; 
-    //     byte expected = ;
-    //     byte output =  AESImplementation.GMul(input_1, input_2);
-
-    //     assertEquals(output, expected);
-    // }
+    @Test
+    public void GMulTest() {
+        // hex: 57 * 80 = 38
+        byte input_1 = (byte)0x57;
+        byte input_2 = (byte)0x80; 
+        byte expected = (byte)0x38;
+        byte output =  AESImplementation.GMul(input_1, input_2);
+        assertEquals(output, expected);
+    }
 
     @Test
     public void stringToByteArrayTest() {
         String input = "23c4c7e11ab3c79a420446c5c25d3a18";
         byte[][] expected = {
-            {(byte)0x23, (byte)0xc4, (byte)0xc7, (byte)0xe1},
-            {(byte)0x1a, (byte)0xb3, (byte)0xc7, (byte)0x9a},
-            {(byte)0x42, (byte)0x04, (byte)0x46, (byte)0xc5},
-            {(byte)0xc2, (byte)0x5d, (byte)0x3a, (byte)0x18}
+            {(byte)0x23, (byte)0x1a, (byte)0x42, (byte)0xc2},
+            {(byte)0xc4, (byte)0xb3, (byte)0x04, (byte)0x5d},
+            {(byte)0xc7, (byte)0xc7, (byte)0x46, (byte)0x3a},
+            {(byte)0xe1, (byte)0x9a, (byte)0xc5, (byte)0x18}
         };
         byte[][] outputArr = AESImplementation.stringToByteArray(input);
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                System.out.println(outputArr[i][j]);
-                assertEquals(outputArr[i][j], expected[i][j]);
-            }
-        }
+        assertArrayEquals(expected, outputArr);
     }
 
     @Test
     public void byteArrayToStringTest() {
         byte[][] input = {
-            {(byte)0x23, (byte)0xc4, (byte)0xc7, (byte)0xe1},
-            {(byte)0x1a, (byte)0xb3, (byte)0xc7, (byte)0x9a},
-            {(byte)0x42, (byte)0x04, (byte)0x46, (byte)0xc5},
-            {(byte)0xc2, (byte)0x5d, (byte)0x3a, (byte)0x18}
+            {(byte)0x23, (byte)0x1a, (byte)0x42, (byte)0xc2},
+            {(byte)0xc4, (byte)0xb3, (byte)0x04, (byte)0x5d},
+            {(byte)0xc7, (byte)0xc7, (byte)0x46, (byte)0x3a},
+            {(byte)0xe1, (byte)0x9a, (byte)0xc5, (byte)0x18}
         };
         String expected = "23c4c7e11ab3c79a420446c5c25d3a18";
 
