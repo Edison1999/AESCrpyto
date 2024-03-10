@@ -14,19 +14,22 @@ public class AES {
     final static int NUM_ROUNDS_KEY_128 = 10;
     public static void main(String[] args) {
         if (args.length != 3) {
-            System.out.println("Usage: java AES <mode> <textFilePath> <keyFilePath>");
+            System.out.println("Usage: java AES <mode> <keyFilePath> <textFilePath>");
             System.exit(1);
         }
         //User input 
         String mode = args[0];
-        String textFilePath = args[1];
-        String keyFilePath = args[2];
+        String keyFilePath = args[1];
+        String textFilePath = args[2];
 
-        // Validation mode = encrypt or decrypt
-        if (!mode.equals("encrypt") || !mode.equals("decrypt") || !mode.equals("e") || !mode.equals("d")) {
+        // Validation: mode = encrypt or decrypt
+        if (!mode.equals("encrypt") || 
+            !mode.equals("decrypt") || 
+            !mode.equals("e") || 
+            !mode.equals("d")) {
             System.out.println("Invalid mode. Please use 'encrypt' / 'e' or 'decrypt' / 'd'.");
             System.exit(1);
-        }else if (mode.equals("encrypt") || mode.equals("e")){
+        } else if (mode.equals("encrypt") || mode.equals("e")) {
             mode = "e";
         } else {
             mode = "d";

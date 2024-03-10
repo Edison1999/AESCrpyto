@@ -1,11 +1,86 @@
 package utilities;
 
 public class AESImplementation implements AESImplementationInterface { 
+
+    // KEY EXPANSION
+    public static byte[][][] keyExpansion(byte[][] key) {
+        byte[][][] expandedKey = new byte[11][][];
+        // the first expanded key is the original key
+        expandedKey[0] = key;
+        byte[][] oldKey = new byte[4][4];
+        for (int round = 1; round < 11; round++) {  // obtain 10 expanded keys
+            oldKey = expandedKey[round-1];
+            expandedKey[round] = generateNewKey(oldKey, round);
+        }
+        return expandedKey;
+    }
+
+    public static byte[][] generateNewKey(byte[][] oldKey, int round) {
+        byte[][] newKey = new byte[4][4];
+        byte[] temp = new byte[4];
+        byte current = 0;
+        // 1. get the last column of the last key
+        for (int i = 0; i < 4; i++) {
+            temp[i] = oldKey[i][3];
+        }
+        
+        // 2. get temp column from keyExpansionCore
+        temp = keyExpansionCore(temp, round);
+
+        // 3. xor with the last key, column by column
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                current = xorByte(oldKey[j][i], temp[j]);
+                temp[j] = current;
+                newKey[j][i] = current;
+            }
+        }
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+            }
+        }
+        return newKey;
+    }
+
+    public static byte[] keyExpansionCore(byte[] tempKey, int round) {
+        byte[] result = new byte[4];
+
+        // 1. rotate left
+        result[0] = tempKey[1];
+        result[1] = tempKey[2];
+        result[2] = tempKey[3];
+        result[3] = tempKey[0];
+        
+        // 2. S-BOX
+        for (int i = 0; i < 4; i++) {
+            result[i] = getByteFromBox(result[i], false);
+        }
+
+        // 3. RCon
+        result[0] = xorByte(result[0], RCON[round-1]);
+        
+        return result;
+    }
+
+    public static byte[] xorByteArray(byte[] arr1, byte[] arr2) {
+        byte[] result = new byte[4];
+        for (int i = 0; i < 4; i++) {
+            result[i] = xorByte(arr1[i], arr2[i]);
+        }
+        return result;
+    }
+
+    public static byte xorByte(byte a, byte b) {
+        int temp = ((int) a) ^ ((int) b);
+        return (byte) temp;
+    }
+
+
     // ENCRYPTION
     // Encrypts the string s
     public static String encrypt(String s, String k, int rounds) {
         byte[][] state = stringToByteArray(s);
-        byte[][]  key = stringToByteArray(k);
+        byte[][] key = stringToByteArray(k);
         state = addRoundKey(state, key);
         for (int i = 0; i < rounds-1; i++) {
             state = subBytes(state);
@@ -128,15 +203,16 @@ public class AESImplementation implements AESImplementationInterface {
     public static byte[] shift(byte[] bs, int shift, boolean left) {
         byte[] shifted_arr = new byte[bs.length];
         int shiftTo;
+        int factor = left ? 1 : -1;
         for (int i = 0; i < bs.length; i++) {
-            shiftTo = left ? ((i + shift) % 4) : ((i + shift*-1 + 4) % 4);
+            shiftTo = (i + shift*factor + 4) % 4;
             shifted_arr[i] = bs[shiftTo];
         }
         return shifted_arr;
     }
 
     // Galois Field (256) Multiplication of two Bytes for mixColumns
-    private static byte GMul(byte a, byte b) {
+    public static byte GMul(byte a, byte b) {
         byte p = 0;
         for (int counter = 0; counter < 8; counter++) {
             if ((b & 1) != 0) {
@@ -159,7 +235,7 @@ public class AESImplementation implements AESImplementationInterface {
         int start;
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                start = i * 8 + j * 2;
+                start = i * 2 + j * 8;
                 temp = s.substring(start, start + 2);
                 result[i][j] = hexStringToByte(temp);
             }
@@ -172,7 +248,7 @@ public class AESImplementation implements AESImplementationInterface {
         String temp = "";
         for (int i = 0; i < arr.length; i++) {
             for (int j = 0; j < arr[0].length; j++) {
-                temp += byteToHexString(arr[i][j]);
+                temp += byteToHexString(arr[j][i]);
             }
         }
         return temp;
