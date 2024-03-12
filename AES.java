@@ -19,13 +19,14 @@ public class AES {
         }
         //User input 
         String mode = args[0];
+        System.out.println(mode);
         String keyFilePath = args[1];
         String textFilePath = args[2];
 
         // Validation: mode = encrypt or decrypt
-        if (!mode.equals("encrypt") || 
-            !mode.equals("decrypt") || 
-            !mode.equals("e") || 
+        if (!mode.equals("encrypt") && 
+            !mode.equals("decrypt") &&
+            !mode.equals("e") && 
             !mode.equals("d")) {
             System.out.println("Invalid mode. Please use 'encrypt' / 'e' or 'decrypt' / 'd'.");
             System.exit(1);
