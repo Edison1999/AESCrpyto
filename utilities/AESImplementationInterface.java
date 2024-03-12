@@ -1,6 +1,9 @@
 package utilities;
 public interface AESImplementationInterface {
 
+    final static int NUM_ROUNDS_KEY_128 = 10;
+    boolean debug = true;
+
     // RCon (Round constants) for key expansion
     public static final byte[] RCON = {
         (byte)0x01, (byte)0x02, (byte)0x04, (byte)0x08, 

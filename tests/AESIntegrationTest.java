@@ -5,18 +5,21 @@ import utilities.AESImplementation;
 
 
 public class AESIntegrationTest {
-    final static int NUM_ROUNDS_KEY_128 = 10;
-    final static String key = "c5e2c94cc80e257a0f450e1c54da0d7d";
+    final static String key = "5468617473206D79204B756E67204675";
     @Test
     public void encryptionTest() {
-        String plainText = "4b5cc4be68b7cbed982e228e299b8d4a";
-        String cipherText = AESImplementation.encrypt(plainText, key, NUM_ROUNDS_KEY_128);
-        String expectedCipherText = "1e5196d4cf49473df67c13290bb601af";
+        String plainText = "54776F204F6E65204E696E652054776F";
+        
+        String cipherText = AESImplementation.encrypt(plainText, key);
+        String expectedCipherText = "29c3505f571420f6402299b31a02d73a";
         assertEquals(expectedCipherText, cipherText);
     }
 
     @Test
     public void decryptionTest() {
-        
+        String plainText = "29c3505f571420f6402299b31a02d73a";
+        String cipherText = AESImplementation.encrypt(plainText, key);
+        String expectedCipherText = "54776F204F6E65204E696E652054776F";
+        assertEquals(expectedCipherText, cipherText);
     }
 }

@@ -56,9 +56,9 @@ public class AES {
             }
             for (String raw_text: text){
                 if (mode == "e"){
-                    results.add(AESImplementation.encrypt(raw_text, key[0], NUM_ROUNDS_KEY_128));
+                    results.add(AESImplementation.encrypt(raw_text, key[0]));
                 }else{
-                    results.add(AESImplementation.decrypt(raw_text, key[0], NUM_ROUNDS_KEY_128));
+                    results.add(AESImplementation.decrypt(raw_text, key[0]));
                 }
             }
             writeArrayListToFile(results, output_file_path);
@@ -87,8 +87,7 @@ public class AES {
     private static void writeArrayListToFile(ArrayList<String> dataList, String filePath) throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             for (String element : dataList) {
-                writer.write(element);
-                writer.write(" "); // Space separator
+                writer.write(String.format("%s\n", element));
             }
         }
     }

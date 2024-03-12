@@ -5,12 +5,28 @@ import utilities.AESImplementation;
 
 public class AESUnitTest {
 
-    /**
-     * Test Key Expansion methods
-     */
+    
     @Test
     public void keyExpansionTest() {
-        // TODO: complete test
+        String key = "5468617473206D79204B756E67204675";
+        byte [][] byte_key = AESImplementation.stringToByteArray(key);
+        byte[][][] res = AESImplementation.keyExpansion(byte_key);
+        String [] expected = {
+            "5468617473206d79204b756e67204675",
+            "e232fcf191129188b159e4e6d679a293",
+            "56082007c71ab18f76435569a03af7fa",
+            "d2600de7157abc686339e901c3031efb",
+            "a11202c9b468bea1d75157a01452495b",
+            "b1293b3305418592d210d232c6429b69",
+            "bd3dc287b87c47156a6c9527ac2e0e4e",
+            "cc96ed1674eaaa031e863f24b2a8316a",
+            "8e51ef21fabb4522e43d7a0656954b6c",
+            "bfe2bf904559fab2a16480b4f7f1cbd8",
+            "28fddef86da4244accc0a4fe3b316f26"
+        };
+        for (int i = 0; i < res.length; i++){
+            assertEquals(expected[i], AESImplementation.byteArrayToString(res[i]));
+        }
     }
 
     @Test

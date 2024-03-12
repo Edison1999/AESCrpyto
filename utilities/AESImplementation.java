@@ -4,11 +4,12 @@ public class AESImplementation implements AESImplementationInterface {
 
     // KEY EXPANSION
     public static byte[][][] keyExpansion(byte[][] key) {
-        byte[][][] expandedKey = new byte[11][][];
+        int dim =  key[0].length;
+        byte[][][] expandedKey = new byte[NUM_ROUNDS_KEY_128+1][][];
         // the first expanded key is the original key
         expandedKey[0] = key;
-        byte[][] oldKey = new byte[4][4];
-        for (int round = 1; round < 11; round++) {  // obtain 10 expanded keys
+        byte[][] oldKey = new byte[dim][dim];
+        for (int round = 1; round < NUM_ROUNDS_KEY_128+1; round++) {  // obtain 10 expanded keys
             oldKey = expandedKey[round-1];
             expandedKey[round] = generateNewKey(oldKey, round);
         }
@@ -16,27 +17,24 @@ public class AESImplementation implements AESImplementationInterface {
     }
 
     public static byte[][] generateNewKey(byte[][] oldKey, int round) {
-        byte[][] newKey = new byte[4][4];
-        byte[] temp = new byte[4];
+        int dim =  oldKey[0].length;
+        byte[][] newKey = new byte[dim][dim];
+        byte[] temp = new byte[dim];
         byte current = 0;
         // 1. get the last column of the last key
-        for (int i = 0; i < 4; i++) {
-            temp[i] = oldKey[i][3];
+        for (int i = 0; i < dim; i++) {
+            temp[i] = oldKey[i][dim-1];
         }
         
         // 2. get temp column from keyExpansionCore
         temp = keyExpansionCore(temp, round);
 
         // 3. xor with the last key, column by column
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
+        for (int i = 0; i < dim; i++) {
+            for (int j = 0; j < dim; j++) {
                 current = xorByte(oldKey[j][i], temp[j]);
                 temp[j] = current;
                 newKey[j][i] = current;
-            }
-        }
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
             }
         }
         return newKey;
@@ -78,19 +76,22 @@ public class AESImplementation implements AESImplementationInterface {
 
     // ENCRYPTION
     // Encrypts the string s
-    public static String encrypt(String s, String k, int rounds) {
+    public static String encrypt(String s, String k) {
         byte[][] state = stringToByteArray(s);
-        byte[][] key = stringToByteArray(k);
-        state = addRoundKey(state, key);
-        for (int i = 0; i < rounds-1; i++) {
+        byte[][][] keys = keyExpansion(stringToByteArray(k));
+        if (debug){System.out.println("****************Round 0****************");}
+        state = addRoundKey(state, keys[0]);
+        for (int i = 0; i < NUM_ROUNDS_KEY_128-1; i++) {
+            if (debug){System.out.println("****************Round " + (i+1) + "****************");}
             state = subBytes(state);
             state = shiftRows(state);
             state = mixColumns(state);
-            state = addRoundKey(state, key);
+            state = addRoundKey(state, keys[i+1]);
         }
+        if (debug){System.out.println("****************Round " + NUM_ROUNDS_KEY_128 + "****************");}
         state = subBytes(state);
         state = shiftRows(state);
-        state = addRoundKey(state, key);
+        state = addRoundKey(state, keys[NUM_ROUNDS_KEY_128]);
         // Convert the state array to a string and return it as output
         return byteArrayToString(state);
     }
@@ -104,6 +105,7 @@ public class AESImplementation implements AESImplementationInterface {
                 result[i][j] = (byte) temp;
             }
         }
+        if (debug){System.out.println("Ouput addRoundKey: " + byteArrayToString(result));}
         return result;
     }
 
@@ -115,6 +117,7 @@ public class AESImplementation implements AESImplementationInterface {
                 result[i][j] = getByteFromBox(state[i][j], false);
             }
         }
+        if (debug){System.out.println("Ouput subBytes: " + byteArrayToString(result));}
         return result;
     }
 
@@ -125,6 +128,7 @@ public class AESImplementation implements AESImplementationInterface {
         for (int i = 1; i < state.length; i++) {
             result[i] =  shift(state[i], i, true);
         }
+        if (debug){System.out.println("Ouput shiftRows: " + byteArrayToString(result));}
         return result;
     }
 
@@ -137,24 +141,30 @@ public class AESImplementation implements AESImplementationInterface {
             result[2][col] = (byte) (state[0][col] ^ state[1][col] ^ GMul((byte)0x02 ,state[2][col]) ^ GMul((byte)0x03, state[3][col]));
             result[3][col] = (byte) (GMul((byte)0x03 ,state[0][col]) ^ state[1][col] ^ state[2][col] ^ GMul((byte)0x02 , state[3][col]));   
         }
+        if (debug){System.out.println("Ouput mixColumns: " + byteArrayToString(result));}
         return result;
     }
 
     // DECRYPTION
     // Decrypts the String s
-    public static String decrypt(String s, String k, int rounds) {
+    public static String decrypt(String s, String k) {
         byte[][] state = stringToByteArray(s);
-        byte[][]  key = stringToByteArray(k);
-        state = addRoundKey(state, key);
-        state = shiftRows(state);
-        state = subBytes(state);
-        for (int i = 0; i < rounds-1; i++) {
-            state = addRoundKey(state, key);
-            state = invMixColumns(state);
+        if (debug){System.out.println("****************Round 0****************");}
+        byte[][][] keys = keyExpansion(stringToByteArray(k));
+        state = addRoundKey(state, keys[0]);
+        // state = shiftRows(state);
+        // state = subBytes(state);
+        for (int i = 0; i < NUM_ROUNDS_KEY_128-1; i++) {
+            if (debug){System.out.println("****************Round " + (i+1) + "****************");}
             state = invShiftRows(state);
             state = invSubBytes(state);
+            state = addRoundKey(state, keys[i+1]);
+            state = invMixColumns(state);
         }
-        state = addRoundKey(state, key);
+        if (debug){System.out.println("****************Round " + NUM_ROUNDS_KEY_128 + "****************");}
+        state = invShiftRows(state);
+        state = invSubBytes(state);
+        state = addRoundKey(state, keys[NUM_ROUNDS_KEY_128]);
         // Convert the state array to a string and return it as output
         return byteArrayToString(state);
     }
@@ -167,6 +177,7 @@ public class AESImplementation implements AESImplementationInterface {
                 result[i][j] = getByteFromBox(state[i][j], true);
             }
         }
+        if (debug){System.out.println("Ouput invSubBytes: " + byteArrayToString(result));}
         return result;
     }
 
@@ -177,6 +188,7 @@ public class AESImplementation implements AESImplementationInterface {
         for (int i = 1; i < state.length; i++) {
             result[i] =  shift(state[i], i, false);
         }
+        if (debug){System.out.println("Ouput invShiftRows: " + byteArrayToString(result));}
         return result;
     }
 
@@ -189,6 +201,7 @@ public class AESImplementation implements AESImplementationInterface {
             result[2][col] = (byte) (GMul((byte)0x0d, state[0][col]) ^ GMul((byte)0x09, state[1][col]) ^ GMul((byte)0x0e, state[2][col]) ^ GMul((byte)0x0b, state[3][col]));
             result[3][col] = (byte) (GMul((byte)0x0b, state[0][col]) ^ GMul((byte)0x0d, state[1][col]) ^ GMul((byte)0x09, state[2][col]) ^ GMul((byte)0x0e, state[3][col]));
         }
+        if (debug){System.out.println("Ouput invMixColumns: " + byteArrayToString(result));}
         return result;
     }
 
@@ -269,23 +282,5 @@ public class AESImplementation implements AESImplementationInterface {
             s = "0" + s;
         }
         return s;
-    }
-
-    
-    public static void main(String[] args) {
-        String plainText = "7b2e9f8c5a6d3f10e57cb4aef906d2a4";
-        String key = "9a3f7b0e5c2d8a1f4b6e0c3d2f5a8e9d";
-         
-        byte[][] arr_plainText = new byte[4][4];
-        byte[][] arr_key = new byte[4][4];
-    
-        for (int i = 0; i < plainText.length(); i+=2) { 
-            int row_idx = (i / 2) / 4;
-            int col_idx = (i / 2) % 4;
-            arr_plainText[col_idx][row_idx] = (byte) Integer.parseInt(plainText.substring(i, i+2), 16);
-            arr_key[row_idx][col_idx] = (byte) Integer.parseInt(key.substring(i, i+2), 16);
-
-        } 
-
     }
 }
