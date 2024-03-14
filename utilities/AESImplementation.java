@@ -151,20 +151,18 @@ public class AESImplementation implements AESImplementationInterface {
         byte[][] state = stringToByteArray(s);
         if (debug){System.out.println("****************Round 0****************");}
         byte[][][] keys = keyExpansion(stringToByteArray(k));
-        state = addRoundKey(state, keys[0]);
-        // state = shiftRows(state);
-        // state = subBytes(state);
-        for (int i = 0; i < NUM_ROUNDS_KEY_128-1; i++) {
-            if (debug){System.out.println("****************Round " + (i+1) + "****************");}
-            state = invShiftRows(state);
-            state = invSubBytes(state);
-            state = addRoundKey(state, keys[i+1]);
-            state = invMixColumns(state);
-        }
-        if (debug){System.out.println("****************Round " + NUM_ROUNDS_KEY_128 + "****************");}
+        state = addRoundKey(state, keys[NUM_ROUNDS_KEY_128]);
         state = invShiftRows(state);
         state = invSubBytes(state);
-        state = addRoundKey(state, keys[NUM_ROUNDS_KEY_128]);
+        for (int i = NUM_ROUNDS_KEY_128-1; i > 0; i--) {
+            if (debug){System.out.println("****************Round " + (i+1) + "****************");}
+            state = addRoundKey(state, keys[i]);
+            state = invMixColumns(state);
+            state = invShiftRows(state);
+            state = invSubBytes(state);
+        }
+        if (debug){System.out.println("****************Round " + NUM_ROUNDS_KEY_128 + "****************");}
+        state = addRoundKey(state, keys[0]);
         // Convert the state array to a string and return it as output
         return byteArrayToString(state);
     }
