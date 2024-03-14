@@ -1,6 +1,7 @@
 ************ AES Program ************
 Created by:
-Liam Guan and Edison Lozano 
+Liam Jialiang Guan 200280
+Edison Lozano 
 
 This program implements the Advanced Encryption Standard (AES) algorithm for both encryption and decryption in Java.
 
@@ -45,4 +46,4 @@ The program relies on the following utilities:
 
 Contact:
 
-For any questions or issues, please contact the authors lozanoea11@brandonu.ca or liam@brandonu.ca
+For any questions or issues, please contact the authors lozanoea11@brandonu.ca or guanj80@brandonu.ca
