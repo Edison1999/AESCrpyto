@@ -27,7 +27,19 @@ Running Time:
 
 The running time of the program may vary depending on factors such as the size of the input files
 and the computational resources available. Generally, the AES algorithm has a polynomial time 
-complexity, and for typical key sizes, it is considered computationally efficient.
+complexity, and for typical key sizes, it is considered computationally efficient. More precisely,
+the AES algorithm has a linear time complexity in most cases. 
+
+We measure the time required to encrypt a specific number of lines with 10 trials for each measurement.
+The result is shown below:
+
+10 lines: 0.045s
+100 lines: 0.233s
+1000 lines: 1.957s
+10000 lines: 18.395s
+100000 line: 196.324s
+
+The result confirms that the algorithm has a linear time complexity. 
 
 Notes:
 
